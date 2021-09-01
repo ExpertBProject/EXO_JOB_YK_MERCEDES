@@ -453,7 +453,7 @@ Public Class Procesos
                 dirFTP = "/ftp/Stock/"
         End Select
         Dim sUser As String = Conexiones.Datos_FTP("FTP", "Usuario")
-        Dim sPass As String = Conexiones.Datos_FTP("FTP", "Password")
+        ' Dim sPass As String = Conexiones.Datos_FTP("FTP", "Password")
 
 
         Try
@@ -462,8 +462,9 @@ Public Class Procesos
                 .Protocol = Protocol.Sftp
                 .HostName = sURLFTP
                 .UserName = sUser
-                .Password = sPass
-                .SshHostKeyFingerprint = "ssh-ed25519 255 dbyAYPE5ICNcDQQyH5CYnF0tfBu7UgtcaH/mx5gm6Hs="
+                '.Password = sPass
+                .SshHostKeyFingerprint = "ssh-rsa 2048 9B0ykH9jkiTp7qFh+y4scyev/eO1hJFYxSRnIQpGWAk="
+                .SshPrivateKeyPath = My.Application.Info.DirectoryPath.ToString & "\clave_PPK\Yokohama_private_key.ppk"
                 .AddRawSettings("FSProtocol", "2")
             End With
 
