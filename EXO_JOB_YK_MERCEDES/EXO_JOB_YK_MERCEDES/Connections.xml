@@ -5,5 +5,4 @@
   <DI Server="VMTIMAC" LicenseServer="VMTIMAC:30000" UserName="manager" Password="expert" DbPassword="Expertone.1" DbUserName="sa" CompanyDB="Yokohama_prod"/>
   <SQLPT Server="VMTIMAC" Db="Yokohama_PT" DbUser="sa" DbPwd="Expertone.1"/>
   <FTP  URL="sftp.de.oeconnection.com" Usuario="spayok" Password=""/>
-  <FTP2  URL="files.rodi.es" Usuario="yokohama" Password="3tAwSmKS2A2t"/>
 </Connection>

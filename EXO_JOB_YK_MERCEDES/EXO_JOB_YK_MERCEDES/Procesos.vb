@@ -66,8 +66,8 @@ Public Class Procesos
 
             strFecha = Format(Now.Year, "0000") & Format(Now.Month, "00") & Format(Now.Day, "00")
             'crear las dos primeras lineas de control
-            strTituloCab = "HDH" & strSepardor & "DOCUMENT_ID" & strSepardor & "Date" & strSepardor & "CURRENCY" & strSepardor & "SUPPLIER_ILN" & strSepardor & "RECEIVER_ID" & strSepardor & "COUNTRY_ID" & strSepardor & "Ediwheel Version" & strSepardor & "C" & vbCrLf
-            strDatosCab = "HDS" & strSepardor & "1" & strFecha & strSepardor & "EUR" & strSepardor & strSupplier_ili & strSepardor & strReceiver_id & strSepardor & "ES" & strSepardor & "B2" & strSepardor & "1" & vbCrLf
+            strTituloCab = "HDH" & strSepardor & "DOCUMENT_ID" & strSepardor & "DATE" & strSepardor & "CURRENCY" & strSepardor & "SUPPLIER_ILN" & strSepardor & "RECEIVER_ID" & strSepardor & "COUNTRY_CODE" & strSepardor & "EDIWHEEL_VERSION" & strSepardor & "CATALOGUE_TYPE" & vbCrLf
+            strDatosCab = "HDS" & strSepardor & "1" & strSepardor & strFecha & strSepardor & "EUR" & strSepardor & strSupplier_ili & strSepardor & strReceiver_id & strSepardor & "ES" & strSepardor & "B4" & strSepardor & "1" & vbCrLf
 
 
             Dim path As String = strRuta & strArchivo
@@ -83,25 +83,35 @@ Public Class Procesos
             info = New System.Text.UTF8Encoding(True).GetBytes(strDatosCab)
             fs.Write(info, 0, info.Length)
 
-            strListaPreciosV = Conexiones.GetValueDB(oDBSAP, """@EXO_OGEN1""", "U_EXO_INFV", "U_EXO_NOMV='TarifaRODINEX'")
+            'strListaPreciosV = Conexiones.GetValueDB(oDBSAP, """@EXO_OGEN1""", "U_EXO_INFV", "U_EXO_NOMV='TarifaMERCEDES'")
+            strListaPreciosV = Conexiones.GetValueDB(oDBSAP, """OCRD""", """ListNum""", """CardCode""='13512'")
             log.escribeMensaje("|OK|" & "Despues de lista de precios", EXO_Log.EXO_Log.Tipo.informacion)
             strRutaImagen = Conexiones.GetValueDB(oDBSAP, "OADP", "BitmapPath", "")
 
+            'Tenemos que saber el porcentaje de descuento de Mercedes
+            Dim sDto As String = Conexiones.GetValueDB(oDBSAP, """OCRD""", """Discount""", """CardCode""='13512'")
+            If sDto.Trim = "" Then
+                sDto = 0.00
+            Else
+                sDto = sDto.Trim.Replace(",", ".")
+            End If
+            '(t2.Price -((t2.Price*" & sDto & ")/100))
             strSQL = "select 'POS' POH, ROW_NUMBER() OVER(ORDER BY T1.ItemCode ASC) POS, t1.U_SEI_JANCODE EAN , t1.CardCode PROD_GRP_1, t1.ItemCode SUPPLIER_CODE, t1.ItemName DESCRIPTION_1,'' DESCRIPTION_2,'' PROD_INFO,'' WDK_ANUB, " _
             & " '' WDK_BRAND,'' WDK_BRAND_TEXT,'' BRAND,REPLACE(U_SEI_CATEGORY1,'Yokohama-Tires','Yokohama') BRAND_TEXT,'' PROD_GRP_2,''GROUP_DESCRIPTION,t1.U_SEI_WEIGHT ""WEIGHT"", T1.U_SEI_INCH RIM_INCH, " _
-            & " '' PROD_CYCLE,'' THIRD_PARTY, 'N' PL, 'Y' TELM, 'Y' EDI, 'Y' ADHOC, '' PL_ID,'" & strRutaImagen & "' + COALESCE(t1.PicturName,'')  URL_1,'' URL_2, '' URL_3,'' URL_4,'' URL_5, T1.U_SEI_WIDTH WIDTH_MM, " _
+            & " '' PROD_CYCLE,'' THIRD_PARTY, 'N' PL, 'Y' TEL, 'Y' EDI, 'Y' ADHOC, '' PL_ID,'" & strRutaImagen & "' + COALESCE(t1.PicturName,'')  URL_1,'' URL_2, '' URL_3,'' URL_4,'' URL_5, T1.U_SEI_WIDTH WIDTH_MM, " _
             & " '' WIDTH_INCH, T1.U_SEI_ASPECT ASPECT_RATIO,'' OVL_DIAMETER, U_SEI_RAD_BIAS CONSTRUCTION_1, '' CONSTRUCTION_2,'' USAGE ,'' DEPTH,  " _
             & " T1.U_SEI_INDEXLOAD LI1,'' LI2, '' ""LI3(DWB)"" ,'' ""LI4(DWB)"", T1.U_SEI_SPEEDSY SP1, '' SP2,'' ""TL/TT"", '' FLANK, '' PR, '' RFD, '' SIZE_PREFIX, " _
             & " '' COMM_MARK, '' RIM_MM, T1.U_SEI_RUNFLAT RUN_FLAT, '' SIDEWALL, t1.U_SEI_COMMPATTERN DESIGN_1, '' DESIGN_2, '' PRODUCT_TYPE, '' VEHICLE_TYPE, '' COND_GRP , '' TAX_ID, " _
-            & " '' TAX, '' SUGGESTED_PRICE, t2.Price GROSS_PRICE, '' GP_VALID_FROM,'' NET_VALUE, '' NV_VALID, '' RECYCLING_FEE, T1.U_SEI_EXTERNALN NOISE_PERFORMANCE, " _
+            & " '' TAX, '' SUGGESTED_PRICE, cast( t2.price as decimal(19,2)) GROSS_PRICE, '' GP_VALID_FROM,'' NET_VALUE, '' NV_VALID, '' RECYCLING_FEE, T1.U_SEI_EXTERNALN NOISE_PERFORMANCE, " _
             & " T1.U_SEI_EXTERNALNO NOISE_CLASS_TYPE, T1.U_SEI_ROLLINREGI ROLLING_RESISTANCE, T1.U_SEI_WETGRIP WET_GRIP, T1.U_SEI_TIRECATEGORY EC_VEHICLE_CLASS, " _
-            & " '' EU_DIRECTIVE_NUMBER " _
+            & " '' EU_DIRECTIVE_NUMBER, '' TRA_CODE, ''SEAL,'' SPECIAL_COMPOUND, '' DIRECTIONAL,'' ASYMETRIC, ''	X_REFERENCE_CODE, ''	MARKET_COMPLIANCE, '0' WHEEL_POSITION, " _
+            & " '' PRICE_REFERENCE_MATERIAL, '' RECOMMENDED_REPLACEMENT_ARTICLE, ''	NON_GRADING_ELIGIBILITY, ''	RFID, '' DESIGN_VARIANT " _
             & " from oitm t1 " _
-            & " LEFT OUTER JOIN ITM1 t2 on t1.ItemCode=t2.ItemCode and t2.PriceList=" & strListaPreciosV & "" _
+            & " LEFT OUTER JOIN ITM1 t2 on t1.ItemCode=t2.ItemCode And t2.PriceList=" & strListaPreciosV & "" _
             & " WHERE ItmsGrpCod='108' " _
             & " AND ISNUMERIC(U_SEI_JANCODE)= 1 " _
-            & " AND t1.U_SEICATEGORY2 in ('PCR/VAN','TBS' ) " _
-            & " and (t1.U_SEI_CATEGORY1='Yokohama-Tires' or t1.U_SEI_CATEGORY1='Alliance-Tires')" _
+            & " AND t1.U_SEICATEGORY2 in ('PCR/VAN' ) " _
+            & " and (t1.U_SEI_CATEGORY1='Yokohama-Tires')" _
             & " AND (ISNULL(t1.U_EXO_Estado, '') = 'A' OR (ISNULL(t1.U_EXO_Estado, '') = 'D' " _
             & " AND ([Yokohama_prod].dbo.EXOStockB2BES(t1.ItemCode) + [Yokohama_prod].dbo.EXOStockB2BPT(t1.ItemCode)) > 0))"
             '& " AND T1.frozenFor ='N' AND T1.validFor='Y'"
@@ -225,14 +235,14 @@ Public Class Procesos
             & " Select t1.ItemCode, t1.ItemName,t1.U_SEI_JANCODE, t3.OnHand , t3.IsCommited  " _
             & " from oitm t1  " _
             & " inner join [Yokohama_prod].dbo.[OITW] t3 With (NOLOCK) On t1.ItemCode = t3.ItemCode and t3.WhsCode='01' " _
-            & " WHERE ItmsGrpCod='108'  AND ISNUMERIC(U_SEI_JANCODE)=1 and (t1.U_SEI_CATEGORY1='Yokohama-Tires' or t1.U_SEI_CATEGORY1='Alliance-Tires') AND t1.U_SEICATEGORY2 in ('PCR/VAN','TBS' )  " _
+            & " WHERE ItmsGrpCod='108'  AND ISNUMERIC(U_SEI_JANCODE)=1 and (t1.U_SEI_CATEGORY1='Yokohama-Tires' ) AND t1.U_SEICATEGORY2 in ('PCR/VAN' )  " _
             & " And (ISNULL(t1.U_EXO_Estado, '') = 'A' OR (ISNULL(t1.U_EXO_Estado, '') = 'D'  " _
             & " And ([Yokohama_prod].dbo.EXOStockB2BES(t1.ItemCode) + [Yokohama_prod].dbo.EXOStockB2BPT(t1.ItemCode)) > 0))  " _
             & " union all " _
             & " select t1.ItemCode,t1.ItemName, t1.U_SEI_JANCODE, t4.OnHand ,t4.IsCommited  " _
             & " from oitm t1   " _
             & " inner join [Yokohama_PT].dbo.[OITW] t4 WITH (NOLOCK) ON t1.ItemCode = t4.ItemCode and t4.WhsCode='PT01' " _
-            & " WHERE ItmsGrpCod='108'  AND ISNUMERIC(U_SEI_JANCODE)=1 and (t1.U_SEI_CATEGORY1='Yokohama-Tires' or t1.U_SEI_CATEGORY1='Alliance-Tires') AND t1.U_SEICATEGORY2 in ('PCR/VAN','TBS' )  " _
+            & " WHERE ItmsGrpCod='108'  AND ISNUMERIC(U_SEI_JANCODE)=1 and (t1.U_SEI_CATEGORY1='Yokohama-Tires') AND t1.U_SEICATEGORY2 in ('PCR/VAN')  " _
             & " And (ISNULL(t1.U_EXO_Estado, '') = 'A' OR (ISNULL(t1.U_EXO_Estado, '') = 'D'  " _
             & " And ([Yokohama_prod].dbo.EXOStockB2BES(t1.ItemCode) + [Yokohama_prod].dbo.EXOStockB2BPT(t1.ItemCode)) > 0)) " _
             & " ) as DatosCompletos " _
@@ -448,9 +458,9 @@ Public Class Procesos
         Dim dirFTP As String = ""
         Select Case strTipo
             Case "ARTICULOS"
-                dirFTP = "/ftp/Catalogo/"
+                dirFTP = "/DTYR/Pricat/"
             Case "STOCK"
-                dirFTP = "/ftp/Stock/"
+                dirFTP = "/DTYR/Send/"
         End Select
         Dim sUser As String = Conexiones.Datos_FTP("FTP", "Usuario")
         ' Dim sPass As String = Conexiones.Datos_FTP("FTP", "Password")
@@ -465,7 +475,7 @@ Public Class Procesos
                 '.Password = sPass
                 .SshHostKeyFingerprint = "ssh-rsa 2048 9B0ykH9jkiTp7qFh+y4scyev/eO1hJFYxSRnIQpGWAk="
                 .SshPrivateKeyPath = My.Application.Info.DirectoryPath.ToString & "\clave_PPK\Yokohama_private_key.ppk"
-                .AddRawSettings("FSProtocol", "2")
+                ' .AddRawSettings("FSProtocol", "2")
             End With
 
             Using session As New Session
