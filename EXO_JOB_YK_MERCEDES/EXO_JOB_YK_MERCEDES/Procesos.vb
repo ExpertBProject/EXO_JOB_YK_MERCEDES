@@ -67,7 +67,7 @@ Public Class Procesos
             strFecha = Format(Now.Year, "0000") & Format(Now.Month, "00") & Format(Now.Day, "00")
             'crear las dos primeras lineas de control
             strTituloCab = "HDH" & strSepardor & "DOCUMENT_ID" & strSepardor & "DATE" & strSepardor & "CURRENCY" & strSepardor & "SUPPLIER_ILN" & strSepardor & "RECEIVER_ID" & strSepardor & "COUNTRY_CODE" & strSepardor & "EDIWHEEL_VERSION" & strSepardor & "CATALOGUE_TYPE" & vbCrLf
-            strDatosCab = "HDS" & strSepardor & "1" & strSepardor & strFecha & strSepardor & "EUR" & strSepardor & strSupplier_ili & strSepardor & strReceiver_id & strSepardor & "ES" & strSepardor & "B4" & strSepardor & "1" & vbCrLf
+            strDatosCab = "HDS" & strSepardor & "1" & strSepardor & strFecha & strSepardor & "EUR" & strSepardor & strSupplier_ili & strSepardor & strReceiver_id & strSepardor & "ES" & strSepardor & "B4" & strSepardor & "P" & vbCrLf
 
 
             Dim path As String = strRuta & strArchivo
@@ -96,13 +96,13 @@ Public Class Procesos
                 sDto = sDto.Trim.Replace(",", ".")
             End If
             '(t2.Price -((t2.Price*" & sDto & ")/100))
-            strSQL = "select 'POS' POH, ROW_NUMBER() OVER(ORDER BY T1.ItemCode ASC) POS, t1.U_SEI_JANCODE EAN , t1.CardCode PROD_GRP_1, t1.ItemCode SUPPLIER_CODE, t1.ItemName DESCRIPTION_1,'' DESCRIPTION_2,'' PROD_INFO,'' WDK_ANUB, " _
+            strSQL = "select 'POS' POH, ROW_NUMBER() OVER(ORDER BY T1.ItemCode ASC) POS, t1.U_SEI_JANCODE EAN , t1.CardCode PROD_GRP_1, t1.ItemCode SUPPLIER_CODE, LEFT(t1.ItemName,35) DESCRIPTION_1,substring(t1.ItemName,36,35) DESCRIPTION_2,'' PROD_INFO,'' WDK_ANUB, " _
             & " '' WDK_BRAND,'' WDK_BRAND_TEXT,'' BRAND,REPLACE(U_SEI_CATEGORY1,'Yokohama-Tires','Yokohama') BRAND_TEXT,'' PROD_GRP_2,''GROUP_DESCRIPTION,t1.U_SEI_WEIGHT ""WEIGHT"", T1.U_SEI_INCH RIM_INCH, " _
-            & " '' PROD_CYCLE,'' THIRD_PARTY, 'N' PL, 'Y' TEL, 'Y' EDI, 'Y' ADHOC, '' PL_ID,'" & strRutaImagen & "' + COALESCE(t1.PicturName,'')  URL_1,'' URL_2, '' URL_3,'' URL_4,'' URL_5, T1.U_SEI_WIDTH WIDTH_MM, " _
+            & " '' PROD_CYCLE,'' THIRD_PARTY, 'N' PL, 'Y' TEL, 'Y' EDI, 'Y' ADHOC, '' PL_ID,'' URL_1,'' URL_2, '' URL_3,'' URL_4,'' URL_5, T1.U_SEI_WIDTH WIDTH_MM, " _
             & " '' WIDTH_INCH, T1.U_SEI_ASPECT ASPECT_RATIO,'' OVL_DIAMETER, U_SEI_RAD_BIAS CONSTRUCTION_1, '' CONSTRUCTION_2,'' USAGE ,'' DEPTH,  " _
             & " T1.U_SEI_INDEXLOAD LI1,'' LI2, '' ""LI3(DWB)"" ,'' ""LI4(DWB)"", T1.U_SEI_SPEEDSY SP1, '' SP2,'' ""TL/TT"", '' FLANK, '' PR, '' RFD, '' SIZE_PREFIX, " _
             & " '' COMM_MARK, '' RIM_MM, T1.U_SEI_RUNFLAT RUN_FLAT, '' SIDEWALL, t1.U_SEI_COMMPATTERN DESIGN_1, '' DESIGN_2, '' PRODUCT_TYPE, '' VEHICLE_TYPE, '' COND_GRP , '' TAX_ID, " _
-            & " '' TAX, '' SUGGESTED_PRICE, cast( t2.price as decimal(19,2)) GROSS_PRICE, '' GP_VALID_FROM,'' NET_VALUE, '' NV_VALID, '' RECYCLING_FEE, T1.U_SEI_EXTERNALN NOISE_PERFORMANCE, " _
+            & " '' TAX, '' SUGGESTED_PRICE, cast( t2.price as decimal(19,2)) GROSS_PRICE, '" & strFecha & "' GP_VALID_FROM,'' NET_VALUE, '' NV_VALID, '' RECYCLING_FEE, T1.U_SEI_EXTERNALN NOISE_PERFORMANCE, " _
             & " T1.U_SEI_EXTERNALNO NOISE_CLASS_TYPE, T1.U_SEI_ROLLINREGI ROLLING_RESISTANCE, T1.U_SEI_WETGRIP WET_GRIP, T1.U_SEI_TIRECATEGORY EC_VEHICLE_CLASS, " _
             & " '' EU_DIRECTIVE_NUMBER, '' TRA_CODE, ''SEAL,'' SPECIAL_COMPOUND, '' DIRECTIONAL,'' ASYMETRIC, ''	X_REFERENCE_CODE, ''	MARKET_COMPLIANCE, '0' WHEEL_POSITION, " _
             & " '' PRICE_REFERENCE_MATERIAL, '' RECOMMENDED_REPLACEMENT_ARTICLE, ''	NON_GRADING_ELIGIBILITY, ''	RFID, '' DESIGN_VARIANT " _
